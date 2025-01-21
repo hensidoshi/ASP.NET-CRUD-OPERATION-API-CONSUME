@@ -1,0 +1,175 @@
+﻿@model CRUD_Demo1.Models.OrderDetailModel
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">Confirm @((Model.OrderDetailID == null) ? "Submission" : "Update")</h5>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to @((Model.OrderDetailID == null) ? "submit this orderdetail?" : "update this orderdetail?")
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-primary" id="confirmYes">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Alert -->
+<div class="alert alert-success alert-dismissible fade show" role="alert" id="successAlert" style="display:none;">
+    <i class="bi bi-check-circle" style="margin-right: 10px;"></i>
+    <span id="successMessage"></span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">@((Model.OrderDetailID == null) ? "Add Order Detail" : "Edit Order Detail")</h5>
+
+        <!-- General Form Elements -->
+        <form asp-controller="OrderDetail" asp-action="OrderDetailSave" method="post" id="orderdetailForm">
+            <input type="hidden" asp-for="OrderDetailID"/>
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label"><span class="text-danger">*</span>Order ID</label>
+                <div class="col-sm-10">
+                    <select class="form-control" asp-for="OrderID" asp-items="@(new SelectList(ViewBag.OrderList, "OrderID", "OrderNumber"))">
+                        <option value="">Select Order</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label"><span class="text-danger">*</span>Product ID</label>
+                <div class="col-sm-10">
+                    <select class="form-control" asp-for="ProductID" asp-items="@(new SelectList(ViewBag.ProductList, "ProductID", "ProductName"))">
+                        <option value="">Select Product</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="inputNumber" class="col-sm-2 col-form-label"><span class="text-danger">*</span>Quantity</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="quantity" asp-for="Quantity">
+                    <span asp-validation-for="Quantity" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="inputNumber" class="col-sm-2 col-form-label"><span class="text-danger">*</span>Amount</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="amount" asp-for="Amount">
+                    <span asp-validation-for="Amount" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="inputNumber" class="col-sm-2 col-form-label"><span class="text-danger">*</span>Total Amount</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="totalAmount" asp-for="TotalAmount" readonly>
+                    <span asp-validation-for="TotalAmount" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label"><span class="text-danger">*</span>User ID</label>
+                <div class="col-sm-10">
+                    <select class="form-control" asp-for="UserID" asp-items="@(new SelectList(ViewBag.UserList, "UserID", "UserName"))">
+                        <option value="">Select User</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label"></label>
+                <div class="col-sm-10">
+                    <button type="button" class="btn btn-success" id="confirmSubmit">
+                        @((Model.OrderDetailID == null) ? "Add" : "Edit")
+                    </button>
+                    <a class="btn btn-danger" asp-controller="OrderDetail" asp-action="OrderDetailsList">Back</a>
+                </div>
+            </div>
+
+        </form><!-- End General Form Elements -->
+
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
+    }
+    <script>
+        $(document).ready(function () {
+            // Show confirmation modal on submit button click
+            $('#confirmSubmit').on('click', function () {
+                console.log('Confirm Submit button clicked');
+                $('#confirmModal').modal('show');
+            });
+
+            // If "Yes" is clicked, check form validity and submit
+            $('#confirmYes').on('click', function () {
+                // Check if form is valid
+                var isValid = $('#orderdetailForm').valid();
+
+                if (isValid) {
+                    console.log('Form is valid, submitting...');
+                    $('#orderdetailForm').submit(); // Submit form if valid
+                } else {
+                    console.log('Form is invalid, showing error...');
+                    $('#errorMessage').text('Please fill out all required fields.').show(); // Show error message
+                }
+            });
+
+            // Handle form submission
+            $('#orderdetailForm').on('submit', function (e) {
+                e.preventDefault(); // Prevent default form submission
+
+                // Simulate form submission with AJAX (or allow server-side submission)
+                $.post($(this).attr('action'), $(this).serialize(), function (response) {
+                    $('#confirmModal').modal('hide');
+
+                    // Determine if adding or editing based on ProductID
+                    if ($('input[name="OrderDetailID"]').val() == 0) {
+                        $('#successMessage').text('Order Detail added successfully!');
+                        // Reset form after adding
+                        $('#orderdetailForm')[0].reset();
+                    } else {
+                        $('#successMessage').text('Order Detail updated successfully!');
+                    }
+
+                    // Show the success message
+                    $('#successAlert').show();
+
+                    // Hide success message after 2 seconds
+                    setTimeout(function () {
+                        $('#successAlert').hide();
+                        if ($('input[name="OrderDetailID"]').val() == 0) {
+                            location.reload(); // Reload page after adding
+                        }
+                    }, 2000);
+                }).fail(function () {
+                    alert('Error occurred while submitting the form.');
+                });
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const quantityInput = document.getElementById('quantity');
+            const amountInput = document.getElementById('amount');
+            const totalAmountInput = document.getElementById('totalAmount');
+
+            function calculateTotalAmount() {
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const amount = parseFloat(amountInput.value) || 0;
+                const totalAmount = quantity * amount;
+                totalAmountInput.value = totalAmount.toFixed(2); // Rounds to 2 decimal places
+            }
+
+            // Listen for input changes on both fields
+            quantityInput.addEventListener('input', calculateTotalAmount);
+            amountInput.addEventListener('input', calculateTotalAmount);
+        });
+    </script>
+
+}

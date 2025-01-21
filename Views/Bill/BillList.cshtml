@@ -1,0 +1,155 @@
+﻿@* @model List<CRUD_Demo1.Models.BillModel> *@
+@model DataTable
+@using System.Data;
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Delete</h5>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete bill?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Alert -->
+<div class="alert alert-danger alert-dismissible fade show" role="alert" id="successAlert" style="display:none;">
+    <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
+    <span id="successMessage"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Bill Table</h5>
+        <div class="d-flex justify-content-end align-items-center">
+            <button class="btn btn-primary">
+                <a class="text-white" asp-controller="Bill" asp-action="BillAddEdit">
+                    <i class="bi bi-plus"></i><span>Add Bill</span>
+                </a>
+            </button>
+            <button class="btn btn-success ms-2">
+                <a class="text-white" asp-controller="Bill" asp-action="ExportToExcel">
+                    <i class="bi bi-file-earmark-excel"></i><span>Export to Excel</span>
+                </a>
+            </button>
+        </div>
+        @* @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success d-flex align-items-center" role="alert">
+                <i class="bi bi-check-circle" style="margin-right: 10px;"></i>
+                @TempData["SuccessMessage"]
+            </div>
+        }
+        @if (TempData["DeleteSuccessMessage"] != null)
+        {
+            <div class="alert alert-danger d-flex align-items-center" role="alert">
+                <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
+                @TempData["DeleteSuccessMessage"]
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger d-flex align-items-center" role="alert">
+                <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
+                @TempData["ErrorMessage"]
+            </div>
+        } *@
+
+        <!-- Table with stripped rows -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Bill ID</th>
+                    <th scope="col">Bill Number</th>
+                    <th scope="col">Bill Date</th>
+                    <th scope="col">Order ID</th>
+                    <th scope="col">Total Amount</th>
+                    <th scope="col">Discount</th>
+                    <th scope="col">Net Amount</th>
+                    <th scope="col">User ID</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (DataRow dr in Model.Rows)
+                {
+                    <tr>
+                        <td>@dr["BillID"]</td>
+                        <td>@dr["BillNumber"]</td>
+                        <td>@dr["BillDate"]</td>
+                        <td>@dr["OrderID"]</td>
+                        <td>@dr["TotalAmount"]</td>
+                        <td>@dr["Discount"]</td>
+                        <td>@dr["NetAmount"]</td>
+                        <td>@dr["UserID"]</td>
+                        <td>
+                            <a class="btn btn-success btn-xs" asp-controller="Bill" asp-action="BillAddEdit" asp-route-BillID="@dr["BillID"]">
+                                <i class="fas fa-edit" style="color: white;"></i><span>Edit</span>
+                            </a>
+                            <a href="#"
+                               class="btn btn-danger btn-xs delete-button"
+                               data-action="@Url.Action("BillDelete", new { BillID = dr["BillID"] })"
+                               data-bs-toggle="modal"
+                               data-bs-target="#deleteConfirmModal">
+                                <i class="fas fa-trash-alt" style="color: white;"></i><span>Delete</span>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <!-- End Table with stripped rows -->
+
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
+    }
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let deleteFormAction = '';
+
+            // Show delete confirmation modal on delete button click
+            $('.delete-button').on('click', function () {
+                deleteFormAction = $(this).data('action'); // Store the action URL from the button's data-action attribute
+                $('#deleteConfirmModal').modal('show');
+            });
+
+            // If "Yes, Delete" is clicked, perform the delete action
+            $('#confirmDelete').on('click', function () {
+                $.ajax({
+                    url: deleteFormAction,
+                    type: 'DELETE',
+                    success: function (response) {
+                        $('#deleteConfirmModal').modal('hide');
+
+                        // Show the success message
+                        $('#successMessage').text('Bill deleted successfully!');
+                        $('#successAlert').show();
+
+                        // Optionally auto-close the success alert after a delay
+                        setTimeout(function () {
+                            $('#successAlert').fadeOut(); // Use fadeOut for smoother hiding
+                            location.reload(); // Reload page after deleting
+                        }, 2000);
+                    },
+                    error: function () {
+                        alert('Error occurred while deleting the item.');
+                    }
+                });
+            });
+        });
+    </script>
+}

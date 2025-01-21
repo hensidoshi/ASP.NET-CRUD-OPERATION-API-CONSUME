@@ -1,0 +1,153 @@
+﻿@* @model List<CRUD_Demo1.Models.UserModel> *@
+@model DataTable
+@using System.Data;
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Delete</h5>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete user?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Alert -->
+<div class="alert alert-danger alert-dismissible fade show" role="alert" id="successAlert" style="display:none;">
+    <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
+    <span id="successMessage"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">User Table</h5>
+        <div class="d-flex justify-content-end align-items-center mb-3">
+            <button class="btn btn-primary">
+                <a class="text-white" asp-controller="User" asp-action="UserAddEdit">
+                    <i class="bi bi-plus"></i><span>Add User</span>
+                </a>
+            </button>
+            <button class="btn btn-success ms-2">
+                <a class="text-white" asp-controller="User" asp-action="ExportToExcel">
+                    <i class="bi bi-file-earmark-excel"></i><span>Export to Excel</span>
+                </a>
+            </button>
+        </div>
+        @* @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success d-flex align-items-center" role="alert">
+                <i class="bi bi-check-circle" style="margin-right: 10px;"></i>
+                @TempData["SuccessMessage"]
+            </div>
+        }
+        @if (TempData["DeleteSuccessMessage"] != null)
+        {
+            <div class="alert alert-danger d-flex align-items-center" role="alert">
+                <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
+                @TempData["DeleteSuccessMessage"]
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger d-flex align-items-center" role="alert">
+                <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
+                @TempData["ErrorMessage"]
+            </div>
+        } *@
+
+        <!-- Table with stripped rows -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">User ID</th>
+                    <th scope="col">User Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Password</th>
+                    <th scope="col">Mobile No</th>
+                    <th scope="col">Address</th>
+                    <th scope="col">Is Active</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (DataRow dr in Model.Rows)
+                {
+                    <tr>
+                        <td>@dr["UserID"]</td>
+                        <td>@dr["UserName"]</td>
+                        <td>@dr["Email"]</td>
+                        <td>@dr["Password"]</td>
+                        <td>@dr["MobileNo"]</td>
+                        <td>@dr["Address"]</td>
+                        <td>@dr["IsActive"]</td>
+                        <td>
+                            <a class="btn btn-success btn-xs" asp-controller="User" asp-action="UserAddEdit" asp-route-UserID="@dr["UserID"]">
+                                <i class="fas fa-edit" style="color: white;"></i><span>Edit</span>
+                            </a>
+                            <a href="#"
+                               class="btn btn-danger btn-xs delete-button"
+                               data-action="@Url.Action("UserDelete", new { UserID = dr["UserID"] })"
+                               data-bs-toggle="modal"
+                               data-bs-target="#deleteConfirmModal">
+                                <i class="fas fa-trash-alt" style="color: white;"></i><span>Delete</span>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <!-- End Table with stripped rows -->
+
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
+    }
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let deleteFormAction = '';
+
+            // Show delete confirmation modal on delete button click
+            $('.delete-button').on('click', function () {
+                deleteFormAction = $(this).data('action'); // Store the action URL from the button's data-action attribute
+                $('#deleteConfirmModal').modal('show');
+            });
+
+            // If "Yes, Delete" is clicked, perform the delete action
+            $('#confirmDelete').on('click', function () {
+                $.ajax({
+                    url: deleteFormAction,
+                    type: 'DELETE',
+                    success: function (response) {
+                        $('#deleteConfirmModal').modal('hide');
+
+                        // Show the success message
+                        $('#successMessage').text('User deleted successfully!');
+                        $('#successAlert').show();
+
+                        // Optionally auto-close the success alert after a delay
+                        setTimeout(function () {
+                            $('#successAlert').fadeOut(); // Use fadeOut for smoother hiding
+                            location.reload(); // Reload page after deleting
+                        }, 2000);
+                    },
+                    error: function () {
+                        alert('Error occurred while deleting the item.');
+                    }
+                });
+            });
+        });
+    </script>
+}

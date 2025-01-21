@@ -1,0 +1,85 @@
+﻿@* @model DataTable
+@using System.Data;
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Product Table</h5>
+        <div class="d-flex justify-content-end align-items-center mb-3">
+        </div>
+        <!-- Table with stripped rows -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Product ID</th>
+                    <th scope="col">Product Name</th>
+                    <th scope="col">Product Price</th>
+                    <th scope="col">Product Code</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">User ID</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (DataRow dr in Model.Rows)
+                {
+                    <tr>
+                        <td>@dr["ProductID"]</td>
+                        <td>@dr["ProductName"]</td>
+                        <td>@dr["ProductPrice"]</td>
+                        <td>@dr["ProductCode"]</td>
+                        <td>@dr["Description"]</td>
+                        <td>@dr["UserID"]</td>
+                        <td>
+                            <a class="btn btn-success btn-xs" asp-controller="Product" asp-action="ProductAddEdit" asp-route-ProductID="@dr["ProductID"]">
+                                <i class="fas fa-edit" style="color: white;"></i><span>Edit</span></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <!-- End Table with stripped rows -->
+
+    </div>
+</div>
+ *@
+ @model System.Data.DataTable
+@using System.Data;
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Product Table</h5>
+        <!-- Table with striped rows -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Product ID</th>
+                    <th scope="col">Product Name</th>
+                    <th scope="col">Product Price</th>
+                    <th scope="col">Product Code</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">User ID</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (DataRow dr in Model.Rows)
+                {
+                    <tr>
+                        <td>@dr["ProductID"]</td>
+                        <td>@dr["ProductName"]</td>
+                        <td>@dr["ProductPrice"]</td>
+                        <td>@dr["ProductCode"]</td>
+                        <td>@dr["Description"]</td>
+                        <td>@dr["UserID"]</td>
+                        <td>
+                            <a class="btn btn-success btn-xs" asp-controller="Product" asp-action="ProductAddEdit" asp-route-ProductID="@dr["ProductID"]">
+                                <i class="fas fa-edit" style="color: white;"></i><span>Edit</span>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <!-- End Table with striped rows -->
+    </div>
+</div>
